@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>TV ohne Untertitel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Grundlayout */
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%;
+      background: black;
+      overflow: hidden;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      background: black;
+    }
+
+    /* Toggle zur Radio-Seite */
+    .toggle-button {
+      position: fixed;
+      top: 10px; right: 10px;
+      width: 50px; height: 50px;
+      line-height: 50px;
+      text-align: center;
+      font-size: 14px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border-radius: 50%;
+      z-index: 300;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    /* Menü-Leiste am unteren Rand */
+    .button-bar {
+      --arrow-width: 36px;              /* Breite des Inline‑Toggles */
+      position: fixed;
+      bottom: 0; left: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 6px 4px;
+      background: rgba(0,0,0,0.6);
+      transform: translateX(0);
+      transition: transform 0.3s ease-in-out;
+      z-index: 100;
+    }
+    .button-bar.hidden {
+      transform: translateX(calc(100% - var(--arrow-width)));
+    }
+    .button-bar button {
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+      background: transparent;
+      border: 1px solid white;
+      border-radius: 6px;
+      padding: 4px 8px;
+      white-space: nowrap;
+    }
+    .button-bar button:hover {
+      background: white;
+      color: black;
+    }
+
+    /* Inline‑Toggle am Ende der Leiste */
+    .toggle-inline {
+      flex: 0 0 var(--arrow-width);
+      padding: 0;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px 0 0 4px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .toggle-inline:hover {
+      background: rgba(255,255,255,0.4);
+    }
+
+    /* Untertitel komplett ausblenden */
+    video::cue { visibility: hidden; }
+    video::-webkit-media-text-track-display { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Umschalter zur Radio-Seite -->
+  <a href="Radioindex.html" class="toggle-button">Radio</a>
+
+  <!-- Video -->
+  <video id="videoPlayer" controls autoplay playsinline>
+    <source id="videoSource"
+            src="https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_hh/master.m3u8"
+            type="application/x-mpegURL">
+    Dein Browser kann dieses Video nicht abspielen.
+  </video>
+
+  <!-- Menü-Leiste mit Inline‑Toggle -->
+  <div id="buttonBar" class="button-bar">
+    <button data-url="https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_hh/master.m3u8">NDR</button>
+    <button data-url="https://mcdn.daserste.de/daserste/de/master.m3u8">ARD</button>
+    <button data-url="https://zdf-hls-15.akamaized.net/hls/live/2016498/de/high/master.m3u8">ZDF</button>
+    <button data-url="https://mcdn.wdr.de/wdr/wdrfs/de/master.m3u8">WDR</button>
+    <button data-url="https://mcdn.br.de/br/fs/bfs_sued/hls/de/master.m3u8">BR</button>
+    <button data-url="https://arteliveext.akamaized.net/hls/live/2030993/artelive_de/index.m3u8">Arte</button>
+    <button data-url="https://zdf-hls-18.akamaized.net/hls/live/2016501/dach/high/master.m3u8">3Sat</button>
+    <button data-url="https://zdf-hls-19.akamaized.net/hls/live/2016502/de/high/master.m3u8">Phoenix</button>
+    <button data-url="https://zdf-hls-16.akamaized.net/hls/live/2016499/de/high/master.m3u8">ZDFNeo</button>
+    <button data-url="https://zdf-hls-17.akamaized.net/hls/live/2016500/de/high/master.m3u8">ZDFInfo</button>
+    <!-- Inline‑Toggle-Button -->
+    <button id="toggleBtn" class="toggle-inline">⟩</button>
+  </div>
+
+  <script>
+    const video = document.getElementById("videoPlayer");
+    const source = document.getElementById("videoSource");
+    const bar    = document.getElementById("buttonBar");
+    const toggle = document.getElementById("toggleBtn");
+    let userInteracted = false;
+
+    // Untertitel ausschalten
+    function disableSubtitles() {
+      for (const t of video.textTracks) t.mode = "disabled";
+    }
+    video.addEventListener("loadedmetadata", disableSubtitles);
+    video.textTracks.addEventListener("addtrack", e => e.track.mode = "disabled");
+
+    // Autoplay mit Ton nach Klick erlauben
+    function ensureAudio() {
+      if (!userInteracted) {
+        video.muted = false;
+        video.play().catch(()=>{});
+        userInteracted = true;
+      }
+    }
+
+    // Sender wechseln
+    document.querySelectorAll("#buttonBar button[data-url]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        source.src = btn.dataset.url;
+        video.load();
+        disableSubtitles();
+        ensureAudio();
+      });
+    });
+
+    // Menü ein-/ausklappen
+    let hidden = false;
+    toggle.addEventListener("click", () => {
+      hidden = !hidden;
+      bar.classList.toggle("hidden", hidden);
+      toggle.textContent = hidden ? "⟨" : "⟩";
+    });
+    // beim Start ist hidden=false → Menü sichtbar
+  </script>
+
+</body>
+</html>
