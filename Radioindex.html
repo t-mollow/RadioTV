@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Mollos Internetradio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    /* Grundlayout */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #8080c7;
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+    }
+    h1 {
+      text-align: center;
+      font-size: clamp(24px,5vw,36px);
+      color: white;
+      margin: 20px 0;
+    }
+
+    /* TV-Umschalter */
+    .toggle-button {
+      position: fixed;
+      top: 10px; right: 10px;
+      width: 50px; height: 50px;
+      line-height: 50px;
+      text-align: center;
+      font-size: 16px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border-radius: 50%;
+      font-weight: bold;
+      text-decoration: none;
+      z-index: 100;
+    }
+    .toggle-button:hover {
+      background: rgba(255,255,255,0.8);
+      color: #000;
+    }
+
+    /* Sleeptimer */
+    .sleep-button {
+      position: fixed;
+      top: 70px; right: 10px;
+      padding: clamp(6px,1.5vw,12px) clamp(8px,2vw,16px);
+      font-size: clamp(10px,2vw,14px); # change
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 100;
+    }
+    .sleep-button:hover {
+      background: rgba(255,255,255,0.8);
+      color: #000;
+    }
+    .sleep-display {
+      position: fixed;
+      top: 90px; right: 10px;  #change
+      font-size: clamp(9px,1.8vw,10px); #change
+      z-index: 100;
+      display: none;
+      text-align: right;
+    }
+
+    /* Responsive Grid für Radio-Buttons */
+    .radio-grid {
+      display: grid;
+      gap: 12px;
+      padding: 10px;
+      justify-content: center;
+    }
+
+    /* Portrait (2 Spalten à 40%) */
+    @media (orientation: portrait) {
+      .radio-grid {
+        grid-template-columns: repeat(2, 40%);
+      }
+    }
+
+    /* Landscape (3 Spalten à 30%) */
+    @media (orientation: landscape) {
+      .radio-grid {
+        grid-template-columns: repeat(3, 30%);
+      }
+    }
+
+    .radio-grid button {
+      font-size: clamp(14px,2.5vw,18px);
+      padding: clamp(8px,1.5vw,16px);
+      border-radius: 12px;
+      background: #e0e0e0;
+      color: #333;
+      font-weight: bold;
+      border: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .radio-grid button.active {
+      background: lightgreen;
+    }
+    .radio-grid button:hover {
+      background: #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TV-Umschalter -->
+  <a href="TVIndex.html" class="toggle-button">TV</a>
+
+  <!-- Sleeptimer -->
+  <button id="sleepToggle" class="sleep-button">⏲ +10 Min</button>
+  <div id="sleepDisplay" class="sleep-display">
+    Schlaf in: <span id="sleepTime">0:00</span>
+  </div>
+
+  <h1>Mollos Internetradio</h1>
+  <audio></audio>
+
+  <!-- Radioliste -->
+  <div class="radio-grid">
+    <button data-audio-url="http://icecast.ndr.de/ndr/ndr903/hamburg/mp3/128/stream.mp3">NDR 90,3</button>
+    <button data-audio-url="http://icecast.ndr.de/ndr/ndr2/hamburg/mp3/128/stream.mp3">NDR 2</button>
+    <button data-audio-url="http://icecast.ndr.de/ndr/ndrinfo/hamburg/mp3/128/stream.mp3">NDR Info</button>
+    <button data-audio-url="http://icecast.ndr.de/ndr/ndr1wellenord/flensburg/mp3/128/stream.mp3">NDR 1 Welle N.</button>
+    <button data-audio-url="http://icecast.ndr.de/ndr/ndrkultur/live/mp3/128/stream.mp3">NDR 1 Kultur</button>
+    <button data-audio-url="http://st01.dlf.de/dlf/01/128/mp3/stream.mp3">DRadio</button>
+    <button data-audio-url="http://st02.dlf.de/dlf/02/128/mp3/stream.mp3">DRadio Kultur</button>
+    <button data-audio-url="https://dispatcher.rndfnk.com/br/br24live/live/mp3/mid">BR24Live</button>
+    <button data-audio-url="http://wdr-wdr5-live.icecast.wdr.de/wdr/wdr5/live/mp3/128/stream.mp3">WDR 5</button>
+    <button data-audio-url="http://wdr-wdr4-live.icecast.wdr.de/wdr/wdr4/live/mp3/128/stream.mp3">WDR 4</button>
+    <button data-audio-url="https://liveradio.swr.de/sw282p3/swr2/play.mp3">SWR 2</button>
+    <button data-audio-url="https://dispatcher.rndfnk.com/hr/hr3/live/mp3/high">HR 3</button>
+    <button data-audio-url="https://dispatcher.rndfnk.com/hr/hr4/nord/mp3/128/stream.mp3">HR 4</button>
+    <button data-audio-url="https://icecast.radiobremen.de/rb/bremenvier/live/mp3/128/stream.mp3">Bremen 4</button>
+    <button data-audio-url="http://mdr-284300-0.cast.mdr.de/mdr/284300/0/mp3/low/stream.mp3">MDR</button>
+    <button data-audio-url="https://edge05.streamonkey.net/rhh-1036">Radio Hbg.</button>
+    <button data-audio-url="https://stream.antenne.de/oldies-but-goldies">Antenne Oldies</button>
+    <button data-audio-url="https://live.streams.klassikradio.de/klassikradio-deutschland/stream/mp3">Klassik Radio</button>
+  </div>
+
+  <script>
+    const player       = document.querySelector('audio');
+    const sleepToggle  = document.getElementById('sleepToggle');
+    const sleepDisplay = document.getElementById('sleepDisplay');
+    const sleepTimeEl  = document.getElementById('sleepTime');
+    let sleepTotal     = 0,
+        sleepTimeoutId = null,
+        sleepIntervalId= null;
+
+    // Anzeige aktualisieren
+    function updateSleepDisplay() {
+      if (sleepTotal > 0) {
+        const m = Math.floor(sleepTotal/60),
+              s = sleepTotal % 60;
+        sleepTimeEl.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        sleepDisplay.style.display = 'block';
+      } else {
+        sleepDisplay.style.display = 'none';
+      }
+    }
+
+    // Timer zurücksetzen
+    function clearSleep() {
+      clearTimeout(sleepTimeoutId);
+      clearInterval(sleepIntervalId);
+      sleepTimeoutId = sleepIntervalId = null;
+      sleepTotal = 0;
+      updateSleepDisplay();
+    }
+
+    // Neuen Sleeptimer setzen
+    function setSleepTimer() {
+      clearTimeout(sleepTimeoutId);
+      clearInterval(sleepIntervalId);
+
+      sleepTimeoutId = setTimeout(() => {
+        player.pause();
+        document.querySelector('button.active')?.classList.remove('active');
+        clearSleep();
+      }, sleepTotal * 1000);
+
+      sleepIntervalId = setInterval(() => {
+        sleepTotal--;
+        updateSleepDisplay();
+        if (sleepTotal <= 0) clearSleep();
+      }, 1000);
+    }
+
+    // +10 Min Klick
+    sleepToggle.addEventListener('click', () => {
+      sleepTotal += 10 * 60;
+      updateSleepDisplay();
+      setSleepTimer();
+    });
+
+    // Senderwahl & Sleep-Reset
+    window.addEventListener('click', e => {
+      if (!e.target.matches('button[data-audio-url]')) return;
+      clearSleep();
+      const btn = e.target;
+      document.querySelector('button.active')?.classList.remove('active');
+      if (player.src === btn.dataset.audioUrl && !player.paused) {
+        player.pause();
+      } else {
+        btn.classList.add('active');
+        player.src = btn.dataset.audioUrl;
+        player.play();
+      }
+    });
+  </script>
+</body>
+</html>
+
